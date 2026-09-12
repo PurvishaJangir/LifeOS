@@ -5,6 +5,56 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("medium");
+  const [brainDump, setBrainDump] = useState("");
+  const [brainDumpLoading, setBrainDumpLoading] = useState(false);
+  const [brainDumpMessage, setBrainDumpMessage] = useState("");
+
+  const handleBrainDump = async () => {
+    if (!brainDump.trim()) return;
+
+    setBrainDumpLoading(true);
+    setBrainDumpMessage("");
+
+    try {
+      const response = await fetch(
+        "http://localhost:5678/webhook-test/472bc513-f588-425d-9b43-8a99afb4ebb9",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: brainDump,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to process brain dump");
+      }
+
+      await response.json();
+
+      setBrainDump("");
+      setBrainDumpMessage("Tasks created successfully! 🚀");
+
+      // Refresh tasks from PostgreSQL through the backend
+      const tasksResponse = await fetch(
+        "http://localhost:5000/api/tasks"
+      );
+
+      const updatedTasks = await tasksResponse.json();
+      setTasks(updatedTasks);
+
+    } catch (error) {
+      console.error(error);
+      setBrainDumpMessage(
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setBrainDumpLoading(false);
+    }
+  };
 
   const fetchTasks = () => {
     fetch("http://localhost:5000/api/tasks")
@@ -263,11 +313,10 @@ function App() {
                 tasks.map((task) => (
 
                   <div
-                    className={`task-card ${
-                      task.status === "completed"
+                    className={`task-card ${task.status === "completed"
                         ? "completed"
                         : ""
-                    }`}
+                      }`}
                     key={task.id}
                   >
 
@@ -350,6 +399,40 @@ function App() {
 
             </div>
 
+            <div className="brain-dump-card">
+              <div className="brain-dump-header">
+                <div>
+                  <span className="section-label">LIFEOS AI</span>
+                  <h2>Brain Dump 🧠</h2>
+                  <p>
+                    Dump everything on your mind. LifeOS will turn it into tasks.
+                  </p>
+                </div>
+              </div>
+
+              <textarea
+                value={brainDump}
+                onChange={(e) => setBrainDump(e.target.value)}
+                placeholder="What's on your mind? e.g. Finish Java assignment tomorrow, apply for internship on Sunday..."
+                rows="5"
+              />
+
+              <div className="brain-dump-actions">
+                <button
+                  onClick={handleBrainDump}
+                  disabled={brainDumpLoading || !brainDump.trim()}
+                >
+                  {brainDumpLoading ? "Processing..." : "Organize my thoughts ✨"}
+                </button>
+
+                {brainDumpMessage && (
+                  <span className="brain-dump-message">
+                    {brainDumpMessage}
+                  </span>
+                )}
+              </div>
+            </div>
+
             {/* Progress */}
             <div className="panel progress-panel">
 
@@ -365,8 +448,8 @@ function App() {
                   <strong>
                     {tasks.length
                       ? Math.round(
-                          (completedTasks / tasks.length) * 100
-                        )
+                        (completedTasks / tasks.length) * 100
+                      )
                       : 0}
                     %
                   </strong>
@@ -377,9 +460,8 @@ function App() {
               <p className="progress-text">
                 {completedTasks === tasks.length && tasks.length > 0
                   ? "Everything is done. Nice work! 🎉"
-                  : `${pendingTasks} task${
-                      pendingTasks !== 1 ? "s" : ""
-                    } still to go.`}
+                  : `${pendingTasks} task${pendingTasks !== 1 ? "s" : ""
+                  } still to go.`}
               </p>
 
             </div>
