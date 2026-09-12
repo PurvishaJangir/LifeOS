@@ -80,7 +80,7 @@ Node.js + Express
 
 
 
-📁 Project Structure
+## 📁 Project Structure
 
 LifeOS/
 │
@@ -105,7 +105,7 @@ LifeOS/
 
 
 
-🚀 Getting Started
+## 🚀 Getting Started
 
 1. Clone the repository
     git clone https://github.com/PurvishaJangir/LifeOS.git
