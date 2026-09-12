@@ -1,0 +1,218 @@
+{
+  "name": "LifeOS - Hello World",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "472bc513-f588-425d-9b43-8a99afb4ebb9",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a289460b-7769-42a5-8bb9-4290306a9ddc",
+      "name": "Webhook",
+      "webhookId": "472bc513-f588-425d-9b43-8a99afb4ebb9"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"task\": \"{{ $json.title }}\",\n  \"priority\": \"{{ $json.priority }}\",\n  \"due_date\": \"{{ $json.due_date }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        608,
+        0
+      ],
+      "id": "ccf9afb0-946e-41f3-a1f6-f4fe325bea36",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $json.body?.message || \"\";\n\nconst parts = message\n  .split(/,|\\band\\b|\\./i)\n  .map(task => task.trim())\n  .filter(task => task.length > 2);\n\nfunction getDueDate(text) {\n  const lower = text.toLowerCase();\n\n  const today = new Date();\n\n  if (lower.includes(\"tomorrow\")) {\n    today.setDate(today.getDate() + 1);\n    return today.toISOString().split(\"T\")[0];\n  }\n\n  if (lower.includes(\"today\")) {\n    return today.toISOString().split(\"T\")[0];\n  }\n\n  if (lower.includes(\"sunday\")) {\n    const day = today.getDay();\n    const daysUntilSunday = (7 - day) % 7 || 7;\n    today.setDate(today.getDate() + daysUntilSunday);\n    return today.toISOString().split(\"T\")[0];\n  }\n\n  return null;\n}\n\nreturn parts.map((task, index) => {\n  const lower = task.toLowerCase();\n\n  let priority = \"medium\";\n\n  if (\n    lower.includes(\"urgent\") ||\n    lower.includes(\"important\") ||\n    lower.includes(\"deadline\") ||\n    lower.includes(\"submit\")\n  ) {\n    priority = \"high\";\n  } else if (\n    lower.includes(\"later\") ||\n    lower.includes(\"optional\") ||\n    lower.includes(\"someday\")\n  ) {\n    priority = \"low\";\n  }\n\n  return {\n    json: {\n      title: task,\n      priority: priority,\n      status: \"pending\",\n      due_date: getDueDate(task)\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "209f109d-7c3e-420e-a1ab-3e05731bbeb1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tasks",
+          "mode": "list",
+          "cachedResultName": "tasks"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "priority": "={{ $json.priority }}",
+            "status": "={{ $json.status }}",
+            "due_date": "={{ $json.due_date }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "due_date",
+              "displayName": "due_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        0
+      ],
+      "id": "0d164d2a-8434-4faf-b060-fd60ad93c126",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "tHnHfA9QbbzjKF0a",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "16935969-cf5d-48a0-bb92-06996d07bbd1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4885841c18097a22a9fd761f20ec1e38feeb6aaf3fa284afc1d7d1f52b485c7"
+  },
+  "id": "sfRGtlGlWbprZOJr",
+  "tags": []
+}
