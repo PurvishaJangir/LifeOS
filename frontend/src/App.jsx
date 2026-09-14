@@ -19,6 +19,7 @@ import {
   deleteTask as deleteTaskAPI,
   processBrainDump,
   createGoal,
+  updateGoal,
 } from "./services/api";
 
 function App() {
@@ -81,6 +82,23 @@ function App() {
       fetchGoals();
     } catch (error) {
       console.error("Error adding goal:", error);
+    }
+  };
+
+  // ==================== COMPLETE GOAL ====================
+
+  const completeGoal = async (id) => {
+    try {
+      await updateGoal(id, {
+        status: "completed",
+      });
+
+      fetchGoals();
+    } catch (error) {
+      console.error(
+        "Error completing goal:",
+        error
+      );
     }
   };
 
@@ -278,6 +296,7 @@ function App() {
                 <GoalCard
                   key={goal.id}
                   goal={goal}
+                  completeGoal={completeGoal}
                 />
               ))
             )}

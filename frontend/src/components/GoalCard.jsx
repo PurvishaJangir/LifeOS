@@ -1,6 +1,6 @@
 import "./GoalCard.css";
 
-function GoalCard({ goal }) {
+function GoalCard({ goal, completeGoal }) {
   return (
     <div className="goal-card">
 
@@ -22,6 +22,15 @@ function GoalCard({ goal }) {
       <div className="goal-status">
         {goal.status}
       </div>
+
+      {goal.status !== "completed" && (
+        <button
+          className="complete-goal-btn"
+          onClick={() => completeGoal(goal.id)}
+        >
+          ✓ Complete Goal
+        </button>
+      )}
 
     </div>
   );
