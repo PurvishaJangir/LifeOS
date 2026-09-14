@@ -144,6 +144,115 @@ app.delete("/api/tasks/:id", async (req, res) => {
     }
 });
 
+// ==================== GOALS ====================
+
+// Get all goals
+app.get("/api/goals", async (req, res) => {
+    try {
+        const result = await pool.query(
+            "SELECT * FROM goals ORDER BY id ASC"
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: "Failed to fetch goals"
+        });
+    }
+});
+
+// Create a goal
+app.post("/api/goals", async (req, res) => {
+    try {
+        const { title, description, deadline } = req.body;
+
+        if (!title || !title.trim()) {
+            return res.status(400).json({
+                error: "Goal title is required"
+            });
+        }
+
+        const result = await pool.query(
+            `INSERT INTO goals (title, description, deadline)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [
+                title.trim(),
+                description || null,
+                deadline || null
+            ]
+        );
+
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: "Failed to create goal"
+        });
+    }
+});
+
+// Update a goal
+app.put("/api/goals/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, status, deadline } = req.body;
+
+        const result = await pool.query(
+            `UPDATE goals
+             SET title = COALESCE($1, title),
+                 description = COALESCE($2, description),
+                 status = COALESCE($3, status),
+                 deadline = COALESCE($4, deadline)
+             WHERE id = $5
+             RETURNING *`,
+            [title, description, status, deadline, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Goal not found"
+            });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: "Failed to update goal"
+        });
+    }
+});
+
+// Delete a goal
+app.delete("/api/goals/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await pool.query(
+            "DELETE FROM goals WHERE id = $1 RETURNING *",
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Goal not found"
+            });
+        }
+
+        res.json({
+            message: "Goal deleted successfully",
+            goal: result.rows[0]
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: "Failed to delete goal"
+        });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`LifeOS backend running on http://localhost:${PORT}`);
 });

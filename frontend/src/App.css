@@ -733,3 +733,45 @@ button {
     font-size: 14px;
     opacity: 0.75;
 }
+
+.goals-section {
+    margin-top: 24px;
+}
+
+.goals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.goal-card {
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.goal-card h3 {
+    margin: 0 0 8px;
+}
+
+.goal-card p {
+    opacity: 0.6;
+    line-height: 1.5;
+}
+
+.goal-card span {
+    font-size: 13px;
+    opacity: 0.6;
+}
+
+.goal-status {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    text-transform: capitalize;
+    background: rgba(255, 255, 255, 0.06);
+}

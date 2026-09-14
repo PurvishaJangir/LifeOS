@@ -8,6 +8,7 @@ function App() {
   const [brainDump, setBrainDump] = useState("");
   const [brainDumpLoading, setBrainDumpLoading] = useState(false);
   const [brainDumpMessage, setBrainDumpMessage] = useState("");
+  const [goals, setGoals] = useState([]);
 
   const handleBrainDump = async () => {
     if (!brainDump.trim()) return;
@@ -55,6 +56,18 @@ function App() {
       setBrainDumpLoading(false);
     }
   };
+
+  const fetchGoals = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/goals");
+      const data = await response.json();
+      setGoals(data);
+    } catch (error) {
+      console.error("Failed to fetch goals:", error);
+    }
+  };
+
+  fetchGoals();
 
   const fetchTasks = () => {
     fetch("http://localhost:5000/api/tasks")
@@ -258,6 +271,42 @@ function App() {
 
         </section>
 
+        <div className="goals-section">
+          <div className="section-header">
+            <div>
+              <span className="section-label">YOUR GOALS</span>
+              <h2>Goals 🎯</h2>
+            </div>
+          </div>
+
+          <div className="goals-grid">
+            {goals.length === 0 ? (
+              <p>No goals yet.</p>
+            ) : (
+              goals.map((goal) => (
+                <div className="goal-card" key={goal.id}>
+                  <h3>{goal.title}</h3>
+
+                  {goal.description && (
+                    <p>{goal.description}</p>
+                  )}
+
+                  {goal.deadline && (
+                    <span>
+                      Deadline:{" "}
+                      {new Date(goal.deadline).toLocaleDateString()}
+                    </span>
+                  )}
+
+                  <div className="goal-status">
+                    {goal.status}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         {/* Dashboard Grid */}
         <section className="dashboard-grid">
 
@@ -314,8 +363,8 @@ function App() {
 
                   <div
                     className={`task-card ${task.status === "completed"
-                        ? "completed"
-                        : ""
+                      ? "completed"
+                      : ""
                       }`}
                     key={task.id}
                   >
