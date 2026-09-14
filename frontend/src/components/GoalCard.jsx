@@ -1,6 +1,6 @@
 import "./GoalCard.css";
 
-function GoalCard({ goal, completeGoal }) {
+function GoalCard({ goal, completeGoal, deleteGoal }) {
   return (
     <div className="goal-card">
 
@@ -13,9 +13,7 @@ function GoalCard({ goal, completeGoal }) {
       {goal.deadline && (
         <span>
           Deadline:{" "}
-          {new Date(
-            goal.deadline
-          ).toLocaleDateString()}
+          {new Date(goal.deadline).toLocaleDateString()}
         </span>
       )}
 
@@ -23,14 +21,25 @@ function GoalCard({ goal, completeGoal }) {
         {goal.status}
       </div>
 
-      {goal.status !== "completed" && (
+      <div className="goal-actions">
+
+        {goal.status !== "completed" && (
+          <button
+            className="complete-goal-btn"
+            onClick={() => completeGoal(goal.id)}
+          >
+            ✓ Complete Goal
+          </button>
+        )}
+
         <button
-          className="complete-goal-btn"
-          onClick={() => completeGoal(goal.id)}
+          className="delete-goal-btn"
+          onClick={() => deleteGoal(goal.id)}
         >
-          ✓ Complete Goal
+          🗑 Delete
         </button>
-      )}
+
+      </div>
 
     </div>
   );

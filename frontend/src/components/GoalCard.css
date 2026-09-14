@@ -1,17 +1,22 @@
-.complete-goal-btn {
+.goal-actions {
+  display: flex;
+  gap: 8px;
   margin-top: 14px;
+}
+
+.delete-goal-btn {
   padding: 8px 12px;
   border: 1px solid #2a2d3a;
   border-radius: 8px;
   background: #171923;
-  color: #ffffff;
+  color: #ff6b6b;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease;
 }
 
-.complete-goal-btn:hover {
+.delete-goal-btn:hover {
   background: #222533;
-  border-color: #7c5cff;
+  border-color: #ff6b6b;
 }

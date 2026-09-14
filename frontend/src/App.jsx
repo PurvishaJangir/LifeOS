@@ -20,6 +20,7 @@ import {
   processBrainDump,
   createGoal,
   updateGoal,
+  deleteGoal,
 } from "./services/api";
 
 function App() {
@@ -99,6 +100,18 @@ function App() {
         "Error completing goal:",
         error
       );
+    }
+  };
+
+  // ==================== DELETE GOAL ====================
+
+  const handleDeleteGoal = async (id) => {
+    try {
+      await deleteGoal(id);
+
+      fetchGoals();
+    } catch (error) {
+      console.error("Error deleting goal:", error);
     }
   };
 
@@ -297,6 +310,7 @@ function App() {
                   key={goal.id}
                   goal={goal}
                   completeGoal={completeGoal}
+                  deleteGoal={handleDeleteGoal}
                 />
               ))
             )}
