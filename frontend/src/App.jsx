@@ -115,6 +115,19 @@ function App() {
     }
   };
 
+
+  // ==================== EDIT GOAL ====================
+
+  const editGoal = async (id, updatedGoal) => {
+    try {
+      await updateGoal(id, updatedGoal);
+
+      fetchGoals();
+    } catch (error) {
+      console.error("Error editing goal:", error);
+    }
+  };
+
   // ==================== INITIAL LOAD ====================
 
   useEffect(() => {
@@ -311,6 +324,7 @@ function App() {
                   goal={goal}
                   completeGoal={completeGoal}
                   deleteGoal={handleDeleteGoal}
+                  editGoal={editGoal}
                 />
               ))
             )}

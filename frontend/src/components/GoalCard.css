@@ -20,3 +20,72 @@
   background: #222533;
   border-color: #ff6b6b;
 }
+
+.edit-goal-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  margin-bottom: 10px;
+
+  border: 1px solid #252733;
+  border-radius: 10px;
+
+  background: #11131a;
+  color: #ffffff;
+
+  font-size: 14px;
+  outline: none;
+}
+
+.edit-goal-input::placeholder {
+  color: #777b8a;
+}
+
+.edit-goal-input:focus {
+  border-color: #7c5cff;
+  box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.1);
+}
+
+.edit-goal-input[type="date"] {
+  color-scheme: dark;
+}
+
+.goal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.complete-goal-btn,
+.delete-goal-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.complete-goal-btn {
+  border: 1px solid #2a2d3a;
+  background: #171923;
+  color: #ffffff;
+}
+
+.complete-goal-btn:hover {
+  background: #222533;
+  border-color: #7c5cff;
+}
+
+.delete-goal-btn {
+  border: 1px solid #2a2d3a;
+  background: #171923;
+  color: #ff6b6b;
+}
+
+.delete-goal-btn:hover {
+  background: #222533;
+  border-color: #ff6b6b;
+}
