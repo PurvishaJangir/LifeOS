@@ -9,6 +9,7 @@ import BrainDump from "./components/BrainDump";
 import AISection from "./components/AISection";
 import TaskList from "./components/TaskList";
 import AddTask from "./components/AddTask";
+import AddGoal from "./components/AddGoal";
 
 import {
   getTasks,
@@ -17,6 +18,7 @@ import {
   updateTask,
   deleteTask as deleteTaskAPI,
   processBrainDump,
+  createGoal,
 } from "./services/api";
 
 function App() {
@@ -29,6 +31,9 @@ function App() {
   const [brainDumpMessage, setBrainDumpMessage] = useState("");
 
   const [goals, setGoals] = useState([]);
+  const [goalTitle, setGoalTitle] = useState("");
+  const [goalDescription, setGoalDescription] = useState("");
+  const [goalDeadline, setGoalDeadline] = useState("");
 
   // ==================== FETCH TASKS ====================
 
@@ -54,6 +59,31 @@ function App() {
       );
     }
   };
+
+  // ==================== ADD GOAL ====================
+
+  const addGoal = async (event) => {
+    event.preventDefault();
+
+    if (!goalTitle.trim()) return;
+
+    try {
+      await createGoal({
+        title: goalTitle,
+        description: goalDescription,
+        deadline: goalDeadline || null,
+      });
+
+      setGoalTitle("");
+      setGoalDescription("");
+      setGoalDeadline("");
+
+      fetchGoals();
+    } catch (error) {
+      console.error("Error adding goal:", error);
+    }
+  };
+
   // ==================== INITIAL LOAD ====================
 
   useEffect(() => {
@@ -229,6 +259,16 @@ function App() {
             </div>
 
           </div>
+
+          <AddGoal
+            title={goalTitle}
+            setTitle={setGoalTitle}
+            description={goalDescription}
+            setDescription={setGoalDescription}
+            deadline={goalDeadline}
+            setDeadline={setGoalDeadline}
+            addGoal={addGoal}
+          />
 
           <div className="goals-grid">
             {goals.length === 0 ? (

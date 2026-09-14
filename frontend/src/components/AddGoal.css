@@ -1,0 +1,39 @@
+.add-goal {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.add-goal input {
+  flex: 1;
+  min-width: 160px;
+  padding: 11px 12px;
+  border: 1px solid #252733;
+  border-radius: 10px;
+  background: #11131a;
+  color: #ffffff;
+  outline: none;
+}
+
+.add-goal input::placeholder {
+  color: #777b8a;
+}
+
+.add-goal input:focus {
+  border-color: #7c5cff;
+}
+
+.add-goal button {
+  padding: 11px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #7c5cff;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-goal button:hover {
+  opacity: 0.9;
+}
