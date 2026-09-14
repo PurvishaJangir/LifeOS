@@ -1,0 +1,62 @@
+.brain-dump-card {
+  margin-top: 24px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.brain-dump-header {
+  margin-bottom: 18px;
+}
+
+.brain-dump-card h2 {
+  margin: 6px 0;
+}
+
+.brain-dump-card p {
+  margin: 0;
+  opacity: 0.6;
+}
+
+.brain-dump-card textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.brain-dump-card textarea:focus {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.brain-dump-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.brain-dump-actions button {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.brain-dump-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.brain-dump-message {
+  font-size: 14px;
+  opacity: 0.75;
+}

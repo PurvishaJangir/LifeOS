@@ -1,14 +1,67 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
+import Sidebar from "./components/Sidebar";
+import Topbar from "./components/Topbar";
+import StatCard from "./components/StatCard";
+import GoalCard from "./components/GoalCard";
+import BrainDump from "./components/BrainDump";
+import AISection from "./components/AISection";
+import TaskList from "./components/TaskList";
+import AddTask from "./components/AddTask";
+
+import {
+  getTasks,
+  getGoals,
+  createTask,
+  updateTask,
+  deleteTask as deleteTaskAPI,
+  processBrainDump,
+} from "./services/api";
+
 function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("medium");
+
   const [brainDump, setBrainDump] = useState("");
   const [brainDumpLoading, setBrainDumpLoading] = useState(false);
   const [brainDumpMessage, setBrainDumpMessage] = useState("");
+
   const [goals, setGoals] = useState([]);
+
+  // ==================== FETCH TASKS ====================
+
+  const fetchTasks = async () => {
+    try {
+      const data = await getTasks();
+      setTasks(data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
+  // ==================== FETCH GOALS ====================
+
+  const fetchGoals = async () => {
+    try {
+      const data = await getGoals();
+      setGoals(data);
+    } catch (error) {
+      console.error(
+        "Failed to fetch goals:",
+        error
+      );
+    }
+  };
+  // ==================== INITIAL LOAD ====================
+
+  useEffect(() => {
+    fetchTasks();
+    fetchGoals();
+  }, []);
+
+  // ==================== BRAIN DUMP ====================
 
   const handleBrainDump = async () => {
     if (!brainDump.trim()) return;
@@ -17,38 +70,20 @@ function App() {
     setBrainDumpMessage("");
 
     try {
-      const response = await fetch(
-        "http://localhost:5678/webhook-test/472bc513-f588-425d-9b43-8a99afb4ebb9",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message: brainDump,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to process brain dump");
-      }
-
-      await response.json();
+      await processBrainDump(brainDump);
 
       setBrainDump("");
-      setBrainDumpMessage("Tasks created successfully! 🚀");
 
-      // Refresh tasks from PostgreSQL through the backend
-      const tasksResponse = await fetch(
-        "http://localhost:5000/api/tasks"
+      setBrainDumpMessage(
+        "Tasks created successfully! 🚀"
       );
 
-      const updatedTasks = await tasksResponse.json();
+      // Refresh tasks
+      const updatedTasks = await getTasks();
       setTasks(updatedTasks);
-
     } catch (error) {
       console.error(error);
+
       setBrainDumpMessage(
         "Something went wrong. Please try again."
       );
@@ -57,28 +92,7 @@ function App() {
     }
   };
 
-  const fetchGoals = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/goals");
-      const data = await response.json();
-      setGoals(data);
-    } catch (error) {
-      console.error("Failed to fetch goals:", error);
-    }
-  };
-
-  fetchGoals();
-
-  const fetchTasks = () => {
-    fetch("http://localhost:5000/api/tasks")
-      .then((response) => response.json())
-      .then((data) => setTasks(data))
-      .catch((error) => console.error("Error fetching tasks:", error));
-  };
-
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  // ==================== ADD TASK ====================
 
   const addTask = async (event) => {
     event.preventDefault();
@@ -86,55 +100,57 @@ function App() {
     if (!title.trim()) return;
 
     try {
-      await fetch("http://localhost:5000/api/tasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: title,
-          priority: priority,
-          status: "pending",
-        }),
+      await createTask({
+        title: title,
+        priority: priority,
+        status: "pending",
       });
 
       setTitle("");
       setPriority("medium");
+
       fetchTasks();
     } catch (error) {
-      console.error("Error adding task:", error);
+      console.error(
+        "Error adding task:",
+        error
+      );
     }
   };
+
+  // ==================== COMPLETE TASK ====================
 
   const completeTask = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/tasks/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          status: "completed",
-        }),
+      await updateTask(id, {
+        status: "completed",
       });
 
       fetchTasks();
     } catch (error) {
-      console.error("Error completing task:", error);
+      console.error(
+        "Error completing task:",
+        error
+      );
     }
   };
+
+  // ==================== DELETE TASK ====================
 
   const deleteTask = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/tasks/${id}`, {
-        method: "DELETE",
-      });
+      await deleteTaskAPI(id);
 
       fetchTasks();
     } catch (error) {
-      console.error("Error deleting task:", error);
+      console.error(
+        "Error deleting task:",
+        error
+      );
     }
   };
+
+  // ==================== STATISTICS ====================
 
   const completedTasks = tasks.filter(
     (task) => task.status === "completed"
@@ -145,138 +161,73 @@ function App() {
   ).length;
 
   const highPriorityTasks = tasks.filter(
-    (task) => task.priority === "high" && task.status !== "completed"
+    (task) =>
+      task.priority === "high" &&
+      task.status !== "completed"
   ).length;
+
+  // ==================== UI ====================
 
   return (
     <div className="app">
 
       {/* Sidebar */}
-      <aside className="sidebar">
-
-        <div className="logo">
-          <div className="logo-icon">✦</div>
-          <div>
-            <h2>LifeOS</h2>
-            <span>Personal OS</span>
-          </div>
-        </div>
-
-        <nav>
-          <p className="nav-label">WORKSPACE</p>
-
-          <button className="nav-item active">
-            <span>⌂</span>
-            Dashboard
-          </button>
-
-          <button className="nav-item">
-            <span>✓</span>
-            Tasks
-          </button>
-
-          <button className="nav-item">
-            <span>◎</span>
-            Goals
-          </button>
-
-          <button className="nav-item">
-            <span>🧠</span>
-            Brain Dump
-          </button>
-
-          <p className="nav-label">INTELLIGENCE</p>
-
-          <button className="nav-item ai-nav">
-            <span>✦</span>
-            LifeOS AI
-          </button>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <div className="system-status">
-            <span className="status-dot"></span>
-            <div>
-              <strong>System Online</strong>
-              <small>All systems operational</small>
-            </div>
-          </div>
-        </div>
-
-      </aside>
+      <Sidebar />
 
       {/* Main Content */}
       <main className="main">
 
-        {/* Top Bar */}
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">PERSONAL COMMAND CENTER</p>
-            <h1>Good evening, Purvisha 👋</h1>
-          </div>
+        {/* Topbar */}
+        <Topbar />
 
-          <div className="topbar-right">
-            <div className="date-box">
-              <span>◷</span>
-              <div>
-                <small>Today</small>
-                <strong>
-                  {new Date().toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </strong>
-              </div>
-            </div>
+        {/* ==================== STATS ==================== */}
 
-            <div className="avatar">P</div>
-          </div>
-        </header>
+        <div className="stats-grid">
 
-        {/* Stats */}
-        <section className="stats-grid">
+          <StatCard
+            icon="✓"
+            label="Total Tasks"
+            value={tasks.length}
+            variant="purple"
+          />
 
-          <div className="stat-card">
-            <div className="stat-icon purple">✓</div>
-            <div>
-              <span>Total Tasks</span>
-              <strong>{tasks.length}</strong>
-            </div>
-          </div>
+          <StatCard
+            icon="◷"
+            label="Pending"
+            value={pendingTasks}
+            variant="blue"
+          />
 
-          <div className="stat-card">
-            <div className="stat-icon blue">◔</div>
-            <div>
-              <span>Pending</span>
-              <strong>{pendingTasks}</strong>
-            </div>
-          </div>
+          <StatCard
+            icon="✓"
+            label="Completed"
+            value={completedTasks}
+            variant="green"
+          />
 
-          <div className="stat-card">
-            <div className="stat-icon green">✓</div>
-            <div>
-              <span>Completed</span>
-              <strong>{completedTasks}</strong>
-            </div>
-          </div>
+          <StatCard
+            icon="!"
+            label="High Priority"
+            value={highPriorityTasks}
+            variant="red"
+          />
 
-          <div className="stat-card">
-            <div className="stat-icon red">!</div>
-            <div>
-              <span>High Priority</span>
-              <strong>{highPriorityTasks}</strong>
-            </div>
-          </div>
+        </div>
 
-        </section>
+        {/* ==================== GOALS ==================== */}
 
         <div className="goals-section">
+
           <div className="section-header">
+
             <div>
-              <span className="section-label">YOUR GOALS</span>
+              <span className="section-label">
+                YOUR GOALS
+              </span>
+
               <h2>Goals 🎯</h2>
             </div>
+
           </div>
 
           <div className="goals-grid">
@@ -284,233 +235,131 @@ function App() {
               <p>No goals yet.</p>
             ) : (
               goals.map((goal) => (
-                <div className="goal-card" key={goal.id}>
-                  <h3>{goal.title}</h3>
-
-                  {goal.description && (
-                    <p>{goal.description}</p>
-                  )}
-
-                  {goal.deadline && (
-                    <span>
-                      Deadline:{" "}
-                      {new Date(goal.deadline).toLocaleDateString()}
-                    </span>
-                  )}
-
-                  <div className="goal-status">
-                    {goal.status}
-                  </div>
-                </div>
+                <GoalCard
+                  key={goal.id}
+                  goal={goal}
+                />
               ))
             )}
           </div>
         </div>
 
-        {/* Dashboard Grid */}
+        {/* ==================== DASHBOARD ==================== */}
+
         <section className="dashboard-grid">
 
-          {/* Tasks */}
+          {/* ==================== TASKS ==================== */}
+
           <div className="panel tasks-panel">
 
             <div className="panel-header">
+
               <div>
-                <p className="eyebrow">YOUR WORK</p>
-                <h2>Today's Tasks</h2>
+                <p className="eyebrow">
+                  YOUR WORK
+                </p>
+
+                <h2>
+                  Today's Tasks
+                </h2>
               </div>
 
               <span className="task-count">
                 {pendingTasks} pending
               </span>
+
             </div>
 
             {/* Add Task */}
-            <form className="add-task" onSubmit={addTask}>
 
-              <input
-                type="text"
-                placeholder="What needs to be done?"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-              />
-
-              <select
-                value={priority}
-                onChange={(event) => setPriority(event.target.value)}
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-
-              <button type="submit">
-                + Add
-              </button>
-
-            </form>
+            <AddTask
+              title={title}
+              setTitle={setTitle}
+              priority={priority}
+              setPriority={setPriority}
+              addTask={addTask}
+            />
 
             {/* Task List */}
-            <div className="task-list">
 
-              {tasks.length === 0 ? (
-                <div className="empty-state">
-                  <div>✦</div>
-                  <h3>Your task list is clear</h3>
-                  <p>Add your first task above.</p>
-                </div>
-              ) : (
-                tasks.map((task) => (
-
-                  <div
-                    className={`task-card ${task.status === "completed"
-                      ? "completed"
-                      : ""
-                      }`}
-                    key={task.id}
-                  >
-
-                    <button
-                      className="complete-btn"
-                      onClick={() => completeTask(task.id)}
-                    >
-                      {task.status === "completed" ? "✓" : ""}
-                    </button>
-
-                    <div className="task-content">
-
-                      <h3>{task.title}</h3>
-
-                      <div className="task-meta">
-
-                        <span
-                          className={`priority ${task.priority}`}
-                        >
-                          {task.priority}
-                        </span>
-
-                        {task.due_date && (
-                          <span>
-                            ◷{" "}
-                            {new Date(task.due_date).toLocaleDateString(
-                              "en-IN",
-                              {
-                                day: "numeric",
-                                month: "short",
-                              }
-                            )}
-                          </span>
-                        )}
-
-                      </div>
-
-                    </div>
-
-                    <button
-                      className="delete-btn"
-                      onClick={() => deleteTask(task.id)}
-                    >
-                      ×
-                    </button>
-
-                  </div>
-
-                ))
-              )}
-
-            </div>
+            <TaskList
+              tasks={tasks}
+              completeTask={completeTask}
+              deleteTask={deleteTask}
+            />
 
           </div>
 
-          {/* AI Card */}
+          {/* ==================== RIGHT COLUMN ==================== */}
+
           <div className="right-column">
 
-            <div className="ai-card">
+            {/* AI CARD */}
 
-              <div className="ai-glow"></div>
+            <AISection />
 
-              <div className="ai-header">
-                <div className="ai-icon">✦</div>
+            <BrainDump
+              brainDump={brainDump}
+              setBrainDump={setBrainDump}
+              brainDumpLoading={brainDumpLoading}
+              brainDumpMessage={brainDumpMessage}
+              handleBrainDump={handleBrainDump}
+            />
 
-                <span>AI ASSISTANT</span>
-              </div>
+            {/* PRODUCTIVITY */}
 
-              <h2>Your life,<br />organized by AI.</h2>
-
-              <p>
-                Turn messy thoughts into clear actions,
-                priorities and plans.
-              </p>
-
-              <button className="ai-button">
-                Ask LifeOS AI
-                <span>→</span>
-              </button>
-
-            </div>
-
-            <div className="brain-dump-card">
-              <div className="brain-dump-header">
-                <div>
-                  <span className="section-label">LIFEOS AI</span>
-                  <h2>Brain Dump 🧠</h2>
-                  <p>
-                    Dump everything on your mind. LifeOS will turn it into tasks.
-                  </p>
-                </div>
-              </div>
-
-              <textarea
-                value={brainDump}
-                onChange={(e) => setBrainDump(e.target.value)}
-                placeholder="What's on your mind? e.g. Finish Java assignment tomorrow, apply for internship on Sunday..."
-                rows="5"
-              />
-
-              <div className="brain-dump-actions">
-                <button
-                  onClick={handleBrainDump}
-                  disabled={brainDumpLoading || !brainDump.trim()}
-                >
-                  {brainDumpLoading ? "Processing..." : "Organize my thoughts ✨"}
-                </button>
-
-                {brainDumpMessage && (
-                  <span className="brain-dump-message">
-                    {brainDumpMessage}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Progress */}
             <div className="panel progress-panel">
 
               <div className="panel-header">
+
                 <div>
-                  <p className="eyebrow">TODAY</p>
-                  <h2>Productivity</h2>
+
+                  <p className="eyebrow">
+                    TODAY
+                  </p>
+
+                  <h2>
+                    Productivity
+                  </h2>
+
                 </div>
+
               </div>
 
               <div className="progress-circle">
+
                 <div>
+
                   <strong>
                     {tasks.length
                       ? Math.round(
-                        (completedTasks / tasks.length) * 100
+                        (completedTasks /
+                          tasks.length) *
+                        100
                       )
                       : 0}
                     %
                   </strong>
-                  <span>complete</span>
+
+                  <span>
+                    complete
+                  </span>
+
                 </div>
+
               </div>
 
               <p className="progress-text">
-                {completedTasks === tasks.length && tasks.length > 0
+
+                {completedTasks ===
+                  tasks.length &&
+                  tasks.length > 0
                   ? "Everything is done. Nice work! 🎉"
-                  : `${pendingTasks} task${pendingTasks !== 1 ? "s" : ""
+                  : `${pendingTasks} task${pendingTasks !== 1
+                    ? "s"
+                    : ""
                   } still to go.`}
+
               </p>
 
             </div>

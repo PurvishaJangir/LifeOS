@@ -1,0 +1,66 @@
+/* ==================== TASKS ==================== */
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 14px;
+
+  border: 1px solid #1d1f27;
+  border-radius: 11px;
+
+  background: #111218;
+
+  transition: 0.2s;
+}
+
+.task-card:hover {
+  border-color: #30323d;
+  transform: translateY(-1px);
+}
+
+.complete-btn {
+  width: 19px;
+  height: 19px;
+
+  flex-shrink: 0;
+
+  border: 1px solid #454752;
+  background: transparent;
+  color: #75e5aa;
+
+  border-radius: 6px;
+
+  display: grid;
+  place-items: center;
+
+  font-size: 11px;
+}
+
+.task-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-content h3 {
+  margin: 0 0 7px;
+
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  color: #656875;
+  font-size: 9px;
+}
